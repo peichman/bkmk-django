@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bookmarks</title>
+    <style type="text/css">
+    .bookmarks {
+    padding-left: 0;
+    list-style-type: none;
+    }
+    .bookmark {
+    margin-bottom: 1em;
+    line-height: 1.5;
+    }
+    .bookmark-tags {
+    padding-left: 0;
+    }
+        .bookmark-tag {
+        display: inline;
+        }
+    </style>
+</head>
+<body>
+<div>
+    {{ paginator.object_list.count }}
+</div>
+<ul class="bookmarks">
+    {% for bookmark in bookmarks %}
+    <li class="bookmark">
+        <a href="{{ bookmark.resource.uri }}">{{ bookmark.resource.title }}</a>
+        [<a href="{% url 'edit_bookmark' bookmark.id %}">Edit</a>]
+        <ul class="bookmark-tags">
+            {% for tag in bookmark.resource.tags.all %}
+            <li class="bookmark-tag">
+                <a href="?tag={{ tag.value }}">{{ tag.value }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
