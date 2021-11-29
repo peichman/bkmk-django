@@ -65,12 +65,7 @@ def edit_bookmark(request: HttpRequest, bookmark_id: int):
     bookmark = get_object_or_404(Bookmark, pk=bookmark_id)
 
     if request.method == 'GET':
-        form = BookmarkForm({
-            'uri': bookmark.resource.uri,
-            'title': bookmark.resource.title,
-            'tags': ' '.join(tag.value for tag in bookmark.resource.tags.all())
-        })
-        return render(request, 'htmlui/bookmark_form.html', context={'form': form})
+        return render(request, 'htmlui/bookmark_form.html', context={'form': BookmarkForm.from_bookmark(bookmark)})
     elif request.method == 'POST':
         form = BookmarkForm(request.POST)
 
