@@ -1,3 +1,7 @@
+from collections import Mapping
+from datetime import datetime
+from typing import Any
+
 from django.db import models
 
 
@@ -26,7 +30,7 @@ class Bookmark(models.Model):
     def __str__(self):
         return self.resource.title
 
-    def update_fields(self, data: dict) -> bool:
+    def update_fields(self, data: Mapping[str, Any]) -> bool:
         changed = False
         if self.resource.title != data['title']:
             self.resource.title = data['title']
@@ -58,3 +62,11 @@ class Bookmark(models.Model):
             self.resource.tags.remove(Tag.objects.get(value=old_tag))
 
         return changed
+
+    def update_and_save(self, data: Mapping[str, Any], timestamp: datetime = None):
+        if timestamp is None:
+            timestamp = datetime.now()
+        if self.update_fields(data):
+            self.modified = timestamp
+            self.resource.save()
+            self.save()

@@ -7,8 +7,16 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from bookmarks.models import Bookmark, Resource, Tag
+from bookmarks.models import Bookmark, Resource
 from htmlui.forms import BookmarkForm
+
+
+def get_title_or_uri(uri: str) -> str:
+    response = requests.get(uri)
+    if not response.ok:
+        return uri
+    soup = BeautifulSoup(response.text, 'html.parser')
+    return soup.title.string or uri
 
 
 def list_bookmarks(request: HttpRequest):
@@ -21,11 +29,10 @@ def list_bookmarks(request: HttpRequest):
                 return HttpResponseRedirect(reverse('edit_bookmark', kwargs={'bookmark_id': bookmark.id}))
             except Bookmark.DoesNotExist:
                 # show the form for a new bookmark
-                soup = BeautifulSoup(requests.get(uri).text, 'html.parser')
                 context = {
                     'form': BookmarkForm({
                         'uri': uri,
-                        'title': soup.title.string
+                        'title': get_title_or_uri(uri)
                     })
                 }
                 return render(request, 'htmlui/bookmark_form.html', context=context)
@@ -47,17 +54,14 @@ def list_bookmarks(request: HttpRequest):
             return render(request, 'htmlui/bookmark_form.html', context={'form': form})
 
         data = form.cleaned_data
-        resource, is_new = Resource.objects.get_or_create(uri=data['uri'], defaults={'title': data['title']})
+        resource, is_new = Resource.objects.get_or_create(uri=data['uri'])
         if is_new:
             now = datetime.now()
             bookmark = Bookmark.objects.create(resource=resource, created=now, modified=now)
-            if data['tags']:
-                for tag_value in data['tags'].split(' '):
-                    tag, _ = Tag.objects.get_or_create(value=tag_value)
-                    bookmark.resource.tags.add(tag)
+            bookmark.update_and_save(data, now)
         else:
             bookmark = resource.bookmark
-            bookmark.update_fields(data)
+            bookmark.update_and_save(data)
         return HttpResponseRedirect(reverse('htmlui/bookmark_form.html', kwargs={'bookmark_id': bookmark.id}))
 
 
@@ -72,9 +76,6 @@ def edit_bookmark(request: HttpRequest, bookmark_id: int):
         if not form.is_valid():
             return render(request, 'htmlui/bookmark_form.html', context={'form': form})
 
-        if bookmark.update_fields(form.cleaned_data):
-            bookmark.modified = datetime.now()
-            bookmark.resource.save()
-            bookmark.save()
+        bookmark.update_and_save(form.cleaned_data)
 
         return HttpResponseRedirect(reverse('edit_bookmark', kwargs={'bookmark_id': bookmark.id}))
