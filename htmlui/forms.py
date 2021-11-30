@@ -4,9 +4,9 @@ from bookmarks.models import Bookmark
 
 
 class BookmarkForm(forms.Form):
-    uri = forms.CharField(label='URI')
-    title = forms.CharField()
-    tags = forms.CharField(required=False)
+    uri = forms.CharField(label='URI', widget=forms.TextInput(attrs={'size': 80}))
+    title = forms.CharField(widget=forms.TextInput(attrs={'size': 80}))
+    tags = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': 80}))
 
     @classmethod
     def from_bookmark(cls, bookmark: Bookmark):

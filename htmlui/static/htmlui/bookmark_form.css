@@ -1,0 +1,18 @@
+.bookmark-title {
+    font-size: 1em;
+}
+.fields {
+    display: grid;
+    grid-template-areas: "label input";
+    grid-row-gap: .5em;
+    grid-column-gap: .5em;
+	grid-template-columns: 4em 1fr;
+	margin: 0;
+}
+dt {
+    margin: auto 0;
+    text-align: right;
+}
+dd {
+    margin: auto 0;
+}

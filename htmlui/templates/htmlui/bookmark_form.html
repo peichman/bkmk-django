@@ -1,23 +1,40 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bookmark</title>
+    <title>Bookmark: {{ form.title.value }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'htmlui/bookmark_form.css' %}"/>
 </head>
 <body>
+<h1 class="bookmark-title">
+    <a href="{{ form.uri.value }}">{{ form.title.value }}</a>
+</h1>
+<p class="timestamps">
+    Bookmark created {{ bookmark.created }}{% if bookmark.modified != bookmark.created %};
+    updated {{ bookmark.modified }}{% endif %}
+</p>
+<p class="tags">
+    Tagged as:
+    {% for tag in bookmark.resource.tags.all %}
+    <a href="./?tag={{ tag }}">{{ tag }}</a>
+    {% endfor %}
+</p>
 <form method="post" action="">
     {% csrf_token %}
-    <dl>
+    <dl class="fields">
         {% for field in form %}
-        <dt>{{ field.label_tag }}</dt>
-        <dd>{{ field }} {{ field.errors }}
+        <dt class="field-label">{{ field.label_tag }}</dt>
+        <dd class="field-input">{{ field }} {{ field.errors }}
             {% if field.help_text %}
             <div class="help">{{ field.help_text|safe }}</div>
             {% endif %}
         </dd>
         {% endfor %}
     </dl>
-    <button>Save</button>
+    <p class="controls">
+        <button>Save</button>
+    </p>
 </form>
 </body>
 </html>
